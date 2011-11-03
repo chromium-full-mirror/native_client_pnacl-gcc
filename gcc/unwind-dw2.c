@@ -220,6 +220,41 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
     }
 }
 
+/* @LOCALMOD-START */
+/*
+ * new ABI functions to support a platform independent version
+ * of libstdc++
+ */
+
+/* abstract away __builtin_eh_return_data_regno(0) 
+ * this needs to be better researched and documented 
+ * the index is likely influenced by  DWARF_FRAME_REGNUM(REG) and
+ * EH_RETURN_DATA_REGNO
+ * c.f.: expand_builtin_eh_return_data_regno()
+ *
+ * NOTE: when gcc restores registers it relies on epilog code
+ * of the function containing the call to __builtin_eh_return
+ * (usually via the uw_install_context(CURRENT, TARGET) macro).
+ *
+ * If the epilog code does NOT restore the two result regs we
+ * are toast - there is run-time check which sadly
+ * results in a silent abort built into uw_install_context_1()
+ * look for the first gcc_assert
+ */
+ 
+inline void
+_Unwind_PNaClSetResult0 (struct _Unwind_Context *context, _Unwind_Word val) {
+  _Unwind_SetGR(context, pnacl_unwind_result0_reg(), val);
+}
+
+/* abstract away __builtin_eh_return_data_regno(1) */
+inline  void
+_Unwind_PNaClSetResult1 (struct _Unwind_Context *context, _Unwind_Word val) {
+  _Unwind_SetGR(context, pnacl_unwind_result1_reg(), val);
+}
+/* @LOCALMOD-END */
+
+
 /* Get the pointer to a register INDEX as saved in CONTEXT.  */
 
 static inline void *
@@ -1597,6 +1632,10 @@ alias (_Unwind_RaiseException);
 alias (_Unwind_Resume);
 alias (_Unwind_Resume_or_Rethrow);
 alias (_Unwind_SetGR);
+// @LOCALMOD-BEGIN
+alias (_Unwind_PNaClSetResult0);
+alias (_Unwind_PNaClSetResult1);
+// @LOCALMOD-END
 alias (_Unwind_SetIP);
 #endif
 

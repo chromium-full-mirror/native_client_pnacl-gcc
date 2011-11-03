@@ -599,6 +599,8 @@ m32c-*-elf*|m32c-*-rtems*)
  	;;
 mep*-*-*)
 	;;
+*-nacl)
+	;;
 *)
 	echo "*** Configuration ${host} not supported" 1>&2
 	exit 1

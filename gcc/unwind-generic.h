@@ -38,6 +38,10 @@ extern "C" {
 
 /* Level 1: Base ABI  */
 
+/* LOCALMOD-BEGIN (for Clang) */
+#define __unwind_word__ __word__
+/* LOCALMOD-END */
+
 /* @@@ The IA-64 ABI uses uint64 throughout.  Most places this is
    inefficient for 32-bit and smaller machines.  */
 typedef unsigned _Unwind_Word __attribute__((__mode__(__unwind_word__)));
@@ -159,6 +163,11 @@ _Unwind_Backtrace (_Unwind_Trace_Fn, void *);
 
 extern _Unwind_Word _Unwind_GetGR (struct _Unwind_Context *, int);
 extern void _Unwind_SetGR (struct _Unwind_Context *, int, _Unwind_Word);
+
+/* @LOCALMOD-START */
+extern void _Unwind_PNaClSetResult0 (struct _Unwind_Context *, _Unwind_Word);
+extern void _Unwind_PNaClSetResult1 (struct _Unwind_Context *, _Unwind_Word);
+/* @LOCALMOD-END */
 
 extern _Unwind_Ptr _Unwind_GetIP (struct _Unwind_Context *);
 extern _Unwind_Ptr _Unwind_GetIPInfo (struct _Unwind_Context *, int *);
