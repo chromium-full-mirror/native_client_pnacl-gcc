@@ -664,10 +664,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
       typedef duration::period 					period;
       typedef chrono::time_point<system_clock, duration> 	time_point;
 
+      // @LOCALMOD
+#if 0
       static_assert(system_clock::duration::min()
 		    < system_clock::duration::zero(),
 		    "a clock's minimum duration cannot be less than its epoch");
-
+#endif
       static constexpr bool is_monotonic = false;
 
       static time_point

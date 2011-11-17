@@ -106,11 +106,23 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // Even if the CPU doesn't need a memory barrier, we need to ensure
 // that the compiler doesn't reorder memory accesses across the
 // barriers.
+
+// @LOCALMOD
+void _llvm_mem_barrier(char ll, char ls, char sl, char ss, char device)
+  asm("llvm.memory.barrier");
+
 #ifndef _GLIBCXX_READ_MEM_BARRIER
-#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
+// @LOCALMOD
+// TODO(robertm): pick better arguments instead of worst-case
+#define _GLIBCXX_READ_MEM_BARRIER  _llvm_mem_barrier(1,1,1,1,1) 
+//#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
+
 #endif
 #ifndef _GLIBCXX_WRITE_MEM_BARRIER
-#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
+// @LOCALMOD
+// TODO(robertm): pick better arguments instead of worst-case
+#define _GLIBCXX_WRITE_MEM_BARRIER _llvm_mem_barrier(1,1,1,1,1) 
+//#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
 #endif
 
 #endif 

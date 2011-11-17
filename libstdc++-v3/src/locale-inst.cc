@@ -175,7 +175,12 @@ _GLIBCXX_END_NAMESPACE_LDBL
   // messages
   template class messages<C>;
   template class messages_byname<C>;
-  
+
+
+// @LOCALMOD
+// NOTE: there is a proposed patch, but it does not seem to work:
+// http://people.freebsd.org/~rpaulo/clang-bootstrap-r211516-1-libstdc%2B%2B.dif
+#if 0
   // ctype
   inline template class __ctype_abstract_base<C>;
   template class ctype_byname<C>;
@@ -183,7 +188,7 @@ _GLIBCXX_END_NAMESPACE_LDBL
   // codecvt
   inline template class __codecvt_abstract_base<C, char, mbstate_t>;
   template class codecvt_byname<C, char, mbstate_t>;
-
+#endif
   // collate
   template class collate<C>;
   template class collate_byname<C>;

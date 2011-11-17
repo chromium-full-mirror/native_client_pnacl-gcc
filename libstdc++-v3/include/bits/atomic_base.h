@@ -161,8 +161,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define ATOMIC_LONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_LLONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 
-  inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
-
+  // @LOCALMOD
+  //  inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
+  using namespace _GLIBCXX_ATOMIC_NAMESPACE;
 
   /// atomic_char
   typedef __atomic_base<char>  	       		atomic_char;

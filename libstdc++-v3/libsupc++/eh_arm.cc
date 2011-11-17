@@ -26,6 +26,8 @@
 #include "unwind-cxx.h"
 
 #ifdef __ARM_EABI_UNWINDER__
+// @LOCALMOD
+#error "arm is not supported"
 
 using namespace __cxxabiv1;
 

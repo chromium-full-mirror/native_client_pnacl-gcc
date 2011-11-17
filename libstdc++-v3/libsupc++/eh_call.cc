@@ -31,6 +31,11 @@
 
 using namespace __cxxabiv1;
 
+// @LOCALMOD-START
+typedef unsigned long _uleb128_t;
+typedef long _sleb128_t;
+// @LOCALMOD-END
+
 #include "unwind-pe.h"
 
 

@@ -44,6 +44,8 @@ extern "C++" {
 
 namespace std 
 {
+  // @LOCALMOD
+  class type_info;
   /**
    * @addtogroup exceptions
    * @{

@@ -30,6 +30,9 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// @LOCALMOD
+#define constexpr const
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 /**
@@ -298,4 +301,3 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace regex_constants
 } // namespace
-

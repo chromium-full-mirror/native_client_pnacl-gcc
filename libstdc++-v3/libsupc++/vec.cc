@@ -358,6 +358,21 @@ namespace __cxxabiv1
   }
 } // namespace __cxxabiv1
 
+// @LOCALMOD-START
+// http://code.google.com/p/nativeclient/issues/detail?id=865
+#if defined(__native_client__) 
+extern "C" int
+__aeabi_atexit (void *object, 
+                void (*destructor) (void *),
+                void *dso_handle)
+{
+  return abi::__cxa_atexit(destructor, object, dso_handle);
+}
+#undef __ARM_EABI__
+#endif
+// @LOCALMOD-END
+
+
 #if defined(__arm__) && defined(__ARM_EABI__)
 
 // The ARM C++ ABI requires that the library provide these additional

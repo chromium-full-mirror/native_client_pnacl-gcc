@@ -10780,6 +10780,13 @@ linux*oldld* | linux*aout* | linux*coff*)
   dynamic_linker=no
   ;;
 
+#@ LOCALMOD
+linux-gnueabi)
+  dynamic_linker=no
+  hardcode_direct=no
+  hardcode_shlibpath_var=no
+  ;;
+
 # This must be Linux ELF.
 linux* | k*bsd*-gnu | kopensolaris*-gnu)
   version_type=linux
@@ -11201,6 +11208,11 @@ else
     lt_cv_dlopen_self=yes
     ;;
 
+  #@ LOCALMOD
+  linux-gnueabi)
+      lt_cv_dlopen=no
+      lt_cv_dlopen_libs=
+      ;;
   mingw* | pw32* | cegcc*)
     lt_cv_dlopen="LoadLibrary"
     lt_cv_dlopen_libs=
@@ -14460,6 +14472,11 @@ irix5* | irix6* | nonstopux*)
 
 # No shared lib support for Linux oldld, aout, or coff.
 linux*oldld* | linux*aout* | linux*coff*)
+  dynamic_linker=no
+  ;;
+
+# @LOCALMOD
+linux-gnueabi)
   dynamic_linker=no
   ;;
 
@@ -44854,6 +44871,8 @@ $as_echo "$ac_ld_relro" >&6; }
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
 $as_echo_n "checking for sin in -lm... " >&6; }
+
+
 if test "${ac_cv_lib_m_sin+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
