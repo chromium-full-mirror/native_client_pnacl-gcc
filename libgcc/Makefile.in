@@ -378,12 +378,14 @@ $(lib2funcs-o): %$(objext): $(gcc_srcdir)/libgcc2.c
 	  $(vis_hide)
 libgcc-objects += $(lib2funcs-o)
 
+ifneq ($(disable_libgcc_base),yes) # @LOCALMOD
 ifeq ($(enable_shared),yes)
 lib2funcs-s-o = $(patsubst %,%_s$(objext),$(lib2funcs))
 $(lib2funcs-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
 	$(gcc_s_compile) -DL$* -c $(gcc_srcdir)/libgcc2.c
 libgcc-s-objects += $(lib2funcs-s-o)
 endif
+endif # @LOCALMOD
 
 ifneq ($(LIB2_SIDITI_CONV_FUNCS),)
 # Build libgcc2.c for each conversion function, with a specific
@@ -414,6 +416,7 @@ $(lib2-divmod-o): %$(objext): $(gcc_srcdir)/libgcc2.c
 	  -fexceptions -fnon-call-exceptions $(vis_hide)
 libgcc-objects += $(lib2-divmod-o)
 
+ifneq ($(disable_libgcc_base),yes) # @LOCALMOD
 ifeq ($(enable_shared),yes)
 lib2-divmod-s-o = $(patsubst %,%_s$(objext),$(LIB2_DIVMOD_FUNCS))
 $(lib2-divmod-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
@@ -421,6 +424,7 @@ $(lib2-divmod-s-o): %_s$(objext): $(gcc_srcdir)/libgcc2.c
 	  -fexceptions -fnon-call-exceptions
 libgcc-s-objects += $(lib2-divmod-s-o)
 endif
+endif # @LOCALMOD
 
 # $(FPBIT) et al. are pathnames relative to the GCC build
 # directory; the supporting files are made by the GCC
