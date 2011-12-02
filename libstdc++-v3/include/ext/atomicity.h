@@ -107,22 +107,24 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // that the compiler doesn't reorder memory accesses across the
 // barriers.
 
-// @LOCALMOD
-void _llvm_mem_barrier(char ll, char ls, char sl, char ss, char device)
-  asm("llvm.memory.barrier");
+// @LOCALMOD-BEGIN
+#ifdef __pnacl__
+// __atomic_thread_fence(5) is a Clang built-in.
+// (5 == memory_order_seq_cst)
+// It is lowered to bitcode: fence seq_cst
+// which is a full memory barrier (hardware and compiler).
+// http://libcxx.llvm.org/atomic_design_a.html
+// TODO(robertm): pick better arguments instead of worst-case
+#define _GLIBCXX_READ_MEM_BARRIER    (__atomic_thread_fence(5))
+#define _GLIBCXX_WRITE_MEM_BARRIER   (__atomic_thread_fence(5))
+#endif
+// @LOCALMOD-END
 
 #ifndef _GLIBCXX_READ_MEM_BARRIER
-// @LOCALMOD
-// TODO(robertm): pick better arguments instead of worst-case
-#define _GLIBCXX_READ_MEM_BARRIER  _llvm_mem_barrier(1,1,1,1,1) 
-//#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
-
+#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
 #endif
 #ifndef _GLIBCXX_WRITE_MEM_BARRIER
-// @LOCALMOD
-// TODO(robertm): pick better arguments instead of worst-case
-#define _GLIBCXX_WRITE_MEM_BARRIER _llvm_mem_barrier(1,1,1,1,1) 
-//#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
+#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
 #endif
 
 #endif 
