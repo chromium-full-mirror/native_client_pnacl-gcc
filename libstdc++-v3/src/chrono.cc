@@ -22,6 +22,12 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef __pnacl__
+// This hack works around
+// http://code.google.com/p/nativeclient/issues/detail?id=2596
+// It can be removed if a) gcc's behavior changes to match clang and the
+// chrono header is fixed accordingly, or b) clang's behavior is currently
+// wrong and gets fixed
 #include <chrono>
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
@@ -81,3 +87,4 @@ namespace std _GLIBCXX_VISIBILITY(default)
 } // namespace std
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1
+#endif // __pnacl__ hack

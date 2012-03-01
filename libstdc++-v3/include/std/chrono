@@ -139,7 +139,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	  {
 	    typedef typename _ToDur::rep			__to_rep;
 	    return _ToDur(static_cast<__to_rep>(
-	      static_cast<_CR>(__d.count()) / static_cast<_CR>(_CF::den)));
+                // hack around
+                //http://code.google.com/p/nativeclient/issues/detail?id=2596
+	      static_cast<_CR>(__d.count()) / (_CF::den)));
 	  }
       };
 
@@ -152,7 +154,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	  {
 	    typedef typename _ToDur::rep			__to_rep;
 	    return _ToDur(static_cast<__to_rep>(
-	      static_cast<_CR>(__d.count()) * static_cast<_CR>(_CF::num)));
+                // hack around
+                // http://code.google.com/p/nativeclient/issues/detail?id=2596
+	      static_cast<_CR>(__d.count()) * (_CF::num)));
 	  }
       };
 
