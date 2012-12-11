@@ -10,6 +10,8 @@
 #define __builtin_dwarf_sp_column() 4
 #elif defined(__arm__)
 #define __builtin_dwarf_sp_column() 13
+#elif defined(__mips__)
+#define __builtin_dwarf_sp_column() 29
 #else
 #error "Unknown platform"
 #endif
@@ -23,6 +25,16 @@
 #define DWARF_FRAME_REGISTERS 17
 #elif defined(__arm__)
 #define DWARF_FRAME_REGISTERS 16
+#elif defined(__mips__)
+/*
+ * Number of hardware registers we use in PNaCl. We have:
+ *
+ *  - 32 integer registers
+ *  - 32 floating point registers
+ *  - 8 condition code registers
+ *  - 2 accumulator registers (hi and lo)
+ */
+#define DWARF_FRAME_REGISTERS 74
 #else
 #error "Unknown platform"
 #endif
@@ -61,6 +73,14 @@
     table[i] = 4; \
 } while (0)
 
+#elif defined(__mips__)
+/* All regs are 32bit = 4 bytes */
+#define __builtin_init_dwarf_reg_size_table(table) do { \
+  int i; \
+  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i) \
+    table[i] = 4; \
+} while (0)
+
 #else
 #error "Unknown platform"
 #endif
@@ -72,6 +92,8 @@
 #define pnacl_unwind_result0_reg() 0
 #elif defined(__arm__)
 #define pnacl_unwind_result0_reg() 4
+#elif defined(__mips__)
+#define pnacl_unwind_result0_reg() 4
 #else
 #error "unknown platform"
 #endif
@@ -82,6 +104,8 @@
 #elif defined(__i386__)
 #define pnacl_unwind_result1_reg() 2
 #elif defined(__arm__)
+#define pnacl_unwind_result1_reg() 5
+#elif defined(__mips__)
 #define pnacl_unwind_result1_reg() 5
 #else
 #error "unknown platform"
