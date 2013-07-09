@@ -42,28 +42,23 @@
 
 /* Define:__builtin_init_dwarf_reg_size_table */
 
-#if defined(__x86_64__)
-  /* This should be 8 (64-bits) for all registers.
-   * However, unwind-dw2.c has the deeply-ingrained assumption
-   * that sizeof(ptr) >= sizeof(machine word).
-   * Until this is fixed, we cannot restore the upper 32-bits of
-   * registers, and this must be set to 4 to avoid triggering asserts.
-   * BUG= http://code.google.com/p/nativeclient/issues/detail?id=1933
-   */
-#define __builtin_init_dwarf_reg_size_table(table) do { \
-  int i; \
-  for (i=0; i < DWARF_FRAME_REGISTERS; i++) table[i] = 4; \
-} while (0)
+/* TODO(mseaborn): Reduce the difference between architectures here.
 
-#elif defined(__i386__)
-/* TODO(robertm): find better documentation for these values */
-#define __builtin_init_dwarf_reg_size_table(table) do { \
-  int i; \
-  for (i = 0; i <= 9; ++i) table[i] = 4; \
-  table[10] = 0;   /* not a typo! register not used? */ \
-  for (i = 11; i < DWARF_FRAME_REGISTERS; ++i) \
-    table[i] = 12;  /* fp registers ? */ \
-} while (0)
+   We could remove the need for the ARM/MIPS macro definitions of
+   __builtin_init_dwarf_reg_size_table() below by passing
+   --pnacl-frontend-target to Clang when compiling libgcc_eh, or by
+   using GCC instead.
+
+   PNaCl currently uses GCC for building libgcc_eh to avoid some LLVM
+   bugs (see http://llvm.org/bugs/show_bug.cgi?id=8541).  We could
+   switch back to using LLVM if these were fixed.
+
+   It might be better to switch to using libunwind instead of libgcc_eh
+   (see https://code.google.com/p/nativeclient/issues/detail?id=2749).  */
+
+#if defined(__i386__) || defined(__x86_64__)
+/* Assume we are compiling with GCC, which provides a working
+   definition of __builtin_init_dwarf_reg_size_table().  */
 
 #elif defined(__arm__)
 /* All regs are 32bit = 4 bytes */
