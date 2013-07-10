@@ -352,17 +352,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   pow(long double __x, long double __y)
   { return __builtin_powl(__x, __y); }
 
+  // @LOCALMOD-BEGIN: Change pow(T, int) to invoke pow(T, T).
+  // This avoids the need to implement a powi intrinsic and behaves
+  // properly w.r.t. errno. This is also what libcxx uses, to which
+  // we intend to switch after the first PNaCl release.
   inline double
   pow(double __x, int __i)
-  { return __builtin_powi(__x, __i); }
+  { return pow(__x, static_cast<double>(__i)); }
 
   inline float
   pow(float __x, int __n)
-  { return __builtin_powif(__x, __n); }
+  { return pow(__x, static_cast<float>(__n); }
 
   inline long double
   pow(long double __x, int __n)
-  { return __builtin_powil(__x, __n); }
+  { return pow(__x, static_cast<long double>(__n)); }
+  // @LOCALMOD-END
 
   using ::sin;
 
