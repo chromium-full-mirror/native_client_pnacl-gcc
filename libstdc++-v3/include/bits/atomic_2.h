@@ -236,11 +236,23 @@ namespace __atomic2
 
       bool
       is_lock_free() const
+      // @LOCALMOD-BEGIN
+#if defined(__pnacl__)
+      { return __nacl_atomic_is_lock_free(sizeof(_M_i), &_M_i); }
+#else
       { return true; }
+#endif
+      // @LOCALMOD-END
 
       bool
       is_lock_free() const volatile
+      // @LOCALMOD-BEGIN
+#if defined(__pnacl__)
+      { return __nacl_atomic_is_lock_free(sizeof(_M_i), &_M_i); }
+#else
       { return true; }
+#endif
+      // @LOCALMOD-END
 
       void
       store(__int_type __i, memory_order __m = memory_order_seq_cst)
@@ -527,11 +539,23 @@ namespace __atomic2
 
       bool
       is_lock_free() const
+      // @LOCALMOD-BEGIN
+#if defined(__pnacl__)
+      { return __nacl_atomic_is_lock_free(sizeof(_M_p), &_M_p); }
+#else
       { return true; }
+#endif
+      // @LOCALMOD-END
 
       bool
       is_lock_free() const volatile
+      // @LOCALMOD-BEGIN
+#if defined(__pnacl__)
+      { return __nacl_atomic_is_lock_free(sizeof(_M_p), &_M_p); }
+#else
       { return true; }
+#endif
+      // @LOCALMOD-END
 
       void
       store(__pointer_type __p, memory_order __m = memory_order_seq_cst)

@@ -140,8 +140,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   /// Lock-free Property
-#if defined(_GLIBCXX_ATOMIC_BUILTINS_1) && defined(_GLIBCXX_ATOMIC_BUILTINS_2) \
+// @LOCALMOD-BEGIN PNaCl always returns "maybe" on LOCK_FREE, and uses a
+//                 modified version of the "always lock-free" implementation
+//                 which delays these concerns to translation time.
+#if defined(__pnacl__)
+# define _GLIBCXX_ATOMIC_PROPERTY 1
+# define _GLIBCXX_ATOMIC_NAMESPACE __atomic2
+#elif defined(_GLIBCXX_ATOMIC_BUILTINS_1) && defined(_GLIBCXX_ATOMIC_BUILTINS_2) \
   && defined(_GLIBCXX_ATOMIC_BUILTINS_4) && defined(_GLIBCXX_ATOMIC_BUILTINS_8)
+// @LOCALMOD-END
 # define _GLIBCXX_ATOMIC_PROPERTY 2
 # define _GLIBCXX_ATOMIC_NAMESPACE __atomic2
 #elif defined(_GLIBCXX_ATOMIC_BUILTINS_1)
@@ -152,6 +159,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_ATOMIC_NAMESPACE __atomic0
 #endif
 
+// @LOCALMOD Add BOOL and POINTER: in the standard but missing here.
+#define ATOMIC_BOOL_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_CHAR_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_CHAR16_T_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_CHAR32_T_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
@@ -160,6 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define ATOMIC_INT_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_LONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 #define ATOMIC_LLONG_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
+#define ATOMIC_POINTER_LOCK_FREE _GLIBCXX_ATOMIC_PROPERTY
 
   // @LOCALMOD
   //  inline namespace _GLIBCXX_ATOMIC_NAMESPACE { }
