@@ -25,8 +25,9 @@
 
 #include <thread>
 #include <cerrno>
+#include <unistd.h>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD: #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -53,6 +54,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
   }
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // @LOCALMOD-START
+  unsigned int
+  thread::hardware_concurrency()
+  {
+    int rv = sysconf(_SC_NPROCESSORS_ONLN);
+    // From the C++11 standard: if the value is not computable or well
+    // defined an implementation should return 0.
+    return rv < 0 ? 0 : rv;
+  }
+  // @LOCALMOD-END
 
   void
   thread::join()
@@ -88,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (!__gthread_active_p())
       __throw_system_error(int(errc::operation_not_permitted));
 
-    __b->_M_this_ptr = __b;
+    __b->_M_this_ptr = std::move(__b); // @LOCALMOD: missing std::move.
     int __e = __gthread_create(&_M_id._M_thread,
 			       &execute_native_thread_routine, __b.get());
     if (__e)
@@ -101,4 +113,4 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+// @LOCALMOD: remove #endif

@@ -44,7 +44,7 @@
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD: #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -179,8 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Returns a value that hints at the number of hardware thread contexts.
     static unsigned int
-    hardware_concurrency()
-    { return 0; }
+    hardware_concurrency(); // @LOCALMOD
 
   private:
     void
@@ -294,7 +293,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 } // namespace
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+// @LOCALMOD: remove #endif
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
