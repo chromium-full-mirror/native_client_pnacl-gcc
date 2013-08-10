@@ -31,14 +31,14 @@
 
 namespace
 {
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
   std::mutex&
   get_atomic_mutex()
   {
     static std::mutex atomic_mutex;
     return atomic_mutex;
   }
-#endif
+// @LOCALMOD #endif
 
   std::__atomic_flag_base flag_table[ 1 << LOGSIZE ] =
     {
@@ -58,9 +58,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     atomic_flag::test_and_set(memory_order)
     {
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
       lock_guard<mutex> __lock(get_atomic_mutex());
-#endif
+// @LOCALMOD #endif
       bool result = _M_i;
       _M_i = true;
       return result;
@@ -69,9 +69,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     atomic_flag::clear(memory_order)
     {
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
       lock_guard<mutex> __lock(get_atomic_mutex());
-#endif
+// @LOCALMOD #endif
       _M_i = false;
     }
 

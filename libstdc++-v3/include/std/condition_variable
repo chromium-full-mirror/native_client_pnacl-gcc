@@ -38,7 +38,7 @@
 #include <chrono>
 #include <mutex> // unique_lock
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -102,8 +102,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// DR 887 - Sync unknown clock to known clock.
 	const typename _Clock::time_point __c_entry = _Clock::now();
 	const __clock_t::time_point __s_entry = __clock_t::now();
-	const chrono::nanoseconds __delta = __atime - __c_entry;
-	const __clock_t::time_point __s_atime = __s_entry + __delta;
+        const auto __delta = __atime - __c_entry; // @LOCALMOD
+        const auto __s_atime = __s_entry + __delta; // @LOCALMOD
 
 	return __wait_until_impl(__lock, __s_atime);
       }
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+// @LOCALMOD #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

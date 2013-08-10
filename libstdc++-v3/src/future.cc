@@ -109,4 +109,3 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_ASM_SYMVER(_ZN9__gnu_cxx15future_categoryE, _ZSt15future_category, GLIBCXX_3.4.14)
 
 #endif
-

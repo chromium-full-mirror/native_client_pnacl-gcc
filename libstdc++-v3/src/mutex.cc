@@ -24,7 +24,7 @@
 
 #include <mutex>
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 #ifndef _GLIBCXX_HAVE_TLS
 namespace
 {
@@ -118,4 +118,4 @@ _GLIBCXX_ASM_SYMVER(_ZN9__gnu_cxx11try_to_lockE, _ZSt11try_to_lock, GLIBCXX_3.4.
 
 #endif
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+// @LOCALMOD #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

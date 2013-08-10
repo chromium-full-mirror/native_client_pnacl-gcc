@@ -34,7 +34,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
   // gcc-4.4.0
   // <mutex> exported std::lock_error
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
   class lock_error : public exception
   {
   public:
@@ -45,7 +45,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   const char*
   lock_error::what() const throw()
   { return "std::lock_error"; }
-#endif
+// @LOCALMOD #endif
 
   // We need these due to the symbols exported since GLIBCXX_3.4.10.
   // See libstdc++/41662 for details.

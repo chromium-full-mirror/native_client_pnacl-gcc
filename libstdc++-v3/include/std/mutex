@@ -46,7 +46,7 @@
 #include <bits/gthr.h>
 #include <bits/move.h> // for std::swap
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+// @LOCALMOD #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -273,7 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_cast<long>(__ns.count())
 	};
 
-	return !__gthread_mutex_timedlock(&_M_mutex, &__ts);
+	return !pthread_mutex_timedlock(&_M_mutex, &__ts); // @LOCALMOD
       }
 
     void
@@ -380,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_cast<long>(__ns.count())
 	};
 
-	return !__gthread_recursive_mutex_timedlock(&_M_mutex, &__ts);
+	return !pthread_mutex_timedlock(&_M_mutex, &__ts); // @LOCALMOD
       }
 
     void
@@ -823,7 +823,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+// @LOCALMOD #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
