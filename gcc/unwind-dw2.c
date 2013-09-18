@@ -51,9 +51,34 @@
 #define PRE_GCC3_DWARF_FRAME_REGISTERS DWARF_FRAME_REGISTERS
 #endif
 
+/* @LOCALMOD-BEGIN */
+#if defined(__arm__)
+/*
+ * Override DWARF_REG_TO_UNWIND_COLUMN to map high ARM register numbers
+ * into lower and obsolete register numbers. See unwind-pnacl.h.
+ */
+int DWARF_REG_TO_UNWIND_COLUMN(int REGNO) {
+  if (REGNO >= 0 && REGNO < 16)
+    return REGNO;
+  if (REGNO >= 256 && REGNO < 287)
+    return (REGNO - 256 + 16);
+  /*
+   * Otherwise, assume REGNO is already mapped down from 256-287 -> 16-48.
+   * The normal 16-48 ARM dwarf registers are obsolete
+   * so this is sort of okay.
+   */
+  if (REGNO < DWARF_FRAME_REGISTERS)
+    return REGNO;
+  abort();
+}
+
+#else
 #ifndef DWARF_REG_TO_UNWIND_COLUMN
 #define DWARF_REG_TO_UNWIND_COLUMN(REGNO) (REGNO)
 #endif
+#endif  // __arm__
+/* @LOCALMOD-END
+
 
 /* This is the register and unwind state for a particular frame.  This
    provides the information necessary to unwind up past a frame and return

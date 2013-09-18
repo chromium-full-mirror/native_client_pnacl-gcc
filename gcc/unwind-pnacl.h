@@ -24,7 +24,12 @@
 #if defined(__x86_64__) || defined(__i386__)
 #define DWARF_FRAME_REGISTERS 17
 #elif defined(__arm__)
-#define DWARF_FRAME_REGISTERS 16
+/*
+ * r0-15, and map 256-287 for d0-d31 into regno 16 -> 48.
+ * See:
+ *http://infocenter.arm.com/help/topic/com.arm.doc.ihi0040b/IHI0040B_aadwarf.pdf
+ */
+#define DWARF_FRAME_REGISTERS 48
 #elif defined(__mips__)
 /*
  * Number of hardware registers we use in PNaCl. We have:
@@ -61,11 +66,14 @@
    definition of __builtin_init_dwarf_reg_size_table().  */
 
 #elif defined(__arm__)
-/* All regs are 32bit = 4 bytes */
-#define __builtin_init_dwarf_reg_size_table(table) do { \
-  int i; \
-  for (i = 0; i < DWARF_FRAME_REGISTERS; ++i) \
-    table[i] = 4; \
+#define __builtin_init_dwarf_reg_size_table(table) do {                 \
+  int i;                                                                \
+  /* Integer registers are 32bit. */                                    \
+  for (i = 0; i < 16; ++i)                                              \
+    table[i] = 4;                                                       \
+  /* The rest are VFPv3/NEON (64bit). */                                \
+  for (i = 16; i < DWARF_FRAME_REGISTERS; ++i)                          \
+    table[i] = 8;                                                       \
 } while (0)
 
 #elif defined(__mips__)
@@ -107,4 +115,3 @@
 #endif
 
 #endif /* UNWIND_PNACL_H */
-
