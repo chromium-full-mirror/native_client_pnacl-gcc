@@ -65,6 +65,7 @@ sources = \
 	eh_exception.cc \
 	eh_globals.cc \
 	eh_personality.cc \
+	eh_pnacl.cc \
 	eh_ptr.cc \
 	eh_term_handler.cc \
 	eh_terminate.cc \
