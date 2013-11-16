@@ -114,9 +114,9 @@ check_exception_spec (const std::type_info *throw_type, void *obj,
 {
   const int32_t *filter_ptr =
       &__pnacl_eh_filter_table[-filter_id - 1];
-  for (; *filter_ptr != -1; ++filter_ptr)
+  for (; *filter_ptr != 0; ++filter_ptr)
     {
-      const std::type_info *catch_type = __pnacl_eh_type_table[*filter_ptr];
+      const std::type_info *catch_type = __pnacl_eh_type_table[*filter_ptr - 1];
       // We ignore the modified value of obj here.
       if (get_adjusted_ptr (catch_type, throw_type, &obj))
         return true;
@@ -135,10 +135,16 @@ static bool
 does_clause_match (const std::type_info *throw_type, void **obj,
                    int32_t clause_id)
 {
+  // Handle "cleanup" clause.
+  if (clause_id == 0)
+    return true;
+
+  // Handle "filter" clause.
   if (clause_id < 0)
     return !check_exception_spec (throw_type, obj, clause_id);
 
-  const std::type_info *catch_type = __pnacl_eh_type_table[clause_id];
+  // Handle "catch" clause.
+  const std::type_info *catch_type = __pnacl_eh_type_table[clause_id - 1];
   return get_adjusted_ptr (catch_type, throw_type, obj);
 }
 
