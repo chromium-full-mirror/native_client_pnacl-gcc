@@ -148,8 +148,31 @@ does_clause_match (const std::type_info *throw_type, void **obj,
   return get_adjusted_ptr (catch_type, throw_type, obj);
 }
 
-// Search for a stack frame that will handle the given exception.
-// The exception is specified by THROW_TYPE and *OBJ.
+// Returns whether the given FRAME should be entered in order to
+// handle the thrown exception (specified by THROW_TYPE and *OBJ).  If
+// so, this adjusts *OBJ (see get_adjusted_ptr()) and sets
+// *RESULT_CLAUSE_ID.
+static bool
+does_frame_match (const std::type_info *throw_type, void **obj,
+                  struct exception_frame *frame, int32_t *result_clause_id)
+{
+  for (int32_t clause_list_id = frame->clause_list_id; clause_list_id != 0; )
+    {
+      const struct action_table_entry *list_node =
+          &__pnacl_eh_action_table[clause_list_id - 1];
+      if (does_clause_match (throw_type, obj, list_node->clause_id))
+        {
+          *result_clause_id = list_node->clause_id;
+          return true;
+        }
+      clause_list_id = list_node->next_clause_list_id;
+    }
+  return false;
+}
+
+// Search for a stack frame that will handle the given exception,
+// starting from FRAME.  The exception is specified by THROW_TYPE and
+// *OBJ.
 //
 // If a frame is found that will handle the exception, this adjusts
 // *OBJ (to upcast it to the "catch" type, if there is one), sets
@@ -157,55 +180,43 @@ does_clause_match (const std::type_info *throw_type, void **obj,
 // matched the exception, and returns true.
 static bool
 find_match (const std::type_info *throw_type, void **obj,
+            struct exception_frame *frame,
             struct exception_frame **result_frame, int32_t *result_clause_id)
 {
-  while (__pnacl_eh_stack != NULL)
+  for (; frame != NULL; frame = frame->next)
     {
-      struct exception_frame *frame = __pnacl_eh_stack;
-      __pnacl_eh_stack = frame->next;
-
-      for (uint32_t clause_list_id = frame->clause_list_id;
-           clause_list_id != 0; )
+      if (does_frame_match (throw_type, obj, frame, result_clause_id))
         {
-          const struct action_table_entry *list_node =
-              &__pnacl_eh_action_table[clause_list_id - 1];
-          if (does_clause_match (throw_type, obj, list_node->clause_id))
-            {
-              // Match found.
-              *result_frame = frame;
-              *result_clause_id = list_node->clause_id;
-              return true;
-            }
-          clause_list_id = list_node->next_clause_list_id;
+          *result_frame = frame;
+          return true;
         }
     }
   return false;
 }
 
+// Search for a non-cleanup stack frame that will handle the given
+// exception, starting from FRAME.  Returns whether a matching frame
+// was found.
+static bool
+is_exception_caught (const std::type_info *throw_type, void *obj,
+                     struct exception_frame *frame)
+{
+  for (; frame != NULL; frame = frame->next)
+    {
+      int32_t clause_id;
+      if (does_frame_match (throw_type, &obj, frame, &clause_id)
+          && clause_id != 0)
+        return true;
+    }
+  return false;
+}
 
-// Each __pnacl_eh_sjlj_Unwind_*() function below provides the
-// definition of _Unwind_*().
-//
-// The "__pnacl_eh_sjlj" prefix is added so that PNaCl's SJLJ
-// (setjmp()/longjmp()-based) implementation of C++ exception handling
-// can coexist with other implementations in the same build of
-// libstdc++/libsupc++.  When SJLJ EH is enabled, each
-// __pnacl_eh_sjlj_Unwind_*() symbol will get renamed to _Unwind_*()
-// when linking a PNaCl pexe.
-
-
-// This implements _Unwind_RaiseException().  This is called when
-// raising an exception for the first time, i.e. for the statement
-// "throw EXPR;".  The compiler lowers "throw EXPR;" to:
-//  * a call to __cxa_allocate_exception() to allocate memory;
-//  * a call to __cxa_throw() which throws the exception by calling
-//    _Unwind_RaiseException().
-//
-// _Unwind_RaiseException() unwinds the stack, looking for the first
-// C++ destructor or catch() block to pass control to.  In LLVM terms,
-// it searches for the first matching invoke/landingpad instruction.
-// When it finds a match, this implementation passes control to the
-// landingpad block by longjmp()'ing to it.
+// handle_exception() is called by _Unwind_RaiseException().  It
+// unwinds the stack, looking for the first C++ destructor or catch()
+// block to pass control to.  In LLVM terms, it searches for the first
+// matching invoke/landingpad instruction.  When it finds a match,
+// this implementation passes control to the landingpad block by
+// longjmp()'ing to it.
 //
 // In a traditional implementation (based on the Itanium ABI),
 // _Unwind_RaiseException() is implemented in a library (libgcc_eh)
@@ -223,16 +234,37 @@ find_match (const std::type_info *throw_type, void **obj,
 //
 // This function returns if stack unwinding did not find any stack
 // frames that match the exception being thrown.
-extern "C" _Unwind_Reason_Code
-__pnacl_eh_sjlj_Unwind_RaiseException (struct _Unwind_Exception *ue_header)
+static void
+handle_exception (struct _Unwind_Exception *ue_header, bool check_for_catch)
 {
   __cxa_exception *xh = __get_exception_header_from_ue (ue_header);
 
   void *obj = __get_object_from_ue (ue_header);
   struct exception_frame *frame;
   int32_t clause_id;
-  if (find_match (xh->exceptionType, &obj, &frame, &clause_id))
+  if (find_match (xh->exceptionType, &obj, __pnacl_eh_stack,
+                  &frame, &clause_id))
     {
+      // Check that there is a non-cleanup handler for the exception.
+      // If not, we should abort before running cleanup handlers
+      // (i.e. destructors).
+      //
+      // This is mainly a convenience for debugging.  It means that if
+      // the program throws an uncaught exception, the location of the
+      // "throw" will be on the stack when the program aborts.  If we
+      // ran cleanup handlers before aborting, this context would be
+      // lost.
+      //
+      // This is optional in the C++ standard, which says "If no
+      // matching handler is found, the function std::terminate() is
+      // called; whether or not the stack is unwound before this call
+      // to std::terminate() is implementation-defined".
+      if (check_for_catch && clause_id == 0 &&
+          !is_exception_caught (xh->exceptionType, obj, frame->next))
+        return;
+
+      __pnacl_eh_stack = frame->next;
+
       // Save adjusted exception pointer so that it can be returned by
       // __cxa_begin_catch() when entering a catch() block.
       xh->adjustedPtr = obj;
@@ -254,7 +286,30 @@ __pnacl_eh_sjlj_Unwind_RaiseException (struct _Unwind_Exception *ue_header)
       frame->result.matched_clause_id = clause_id;
       longjmp (jmpbuf_copy, 1);
     }
+}
 
+
+// Each __pnacl_eh_sjlj_Unwind_*() function below provides the
+// definition of _Unwind_*().
+//
+// The "__pnacl_eh_sjlj" prefix is added so that PNaCl's SJLJ
+// (setjmp()/longjmp()-based) implementation of C++ exception handling
+// can coexist with other implementations in the same build of
+// libstdc++/libsupc++.  When SJLJ EH is enabled, each
+// __pnacl_eh_sjlj_Unwind_*() symbol will get renamed to _Unwind_*()
+// when linking a PNaCl pexe.
+
+
+// This implements _Unwind_RaiseException().  This is called when
+// raising an exception for the first time, i.e. for the statement
+// "throw EXPR;".  The compiler lowers "throw EXPR;" to:
+//  * a call to __cxa_allocate_exception() to allocate memory;
+//  * a call to __cxa_throw() which throws the exception by calling
+//    _Unwind_RaiseException().
+extern "C" _Unwind_Reason_Code
+__pnacl_eh_sjlj_Unwind_RaiseException (struct _Unwind_Exception *ue_header)
+{
+  handle_exception (ue_header, true);
   return _URC_END_OF_STACK;
 }
 
@@ -270,20 +325,16 @@ __pnacl_eh_sjlj_Unwind_RaiseException (struct _Unwind_Exception *ue_header)
 extern "C" void
 __pnacl_eh_resume (struct _Unwind_Exception *ue_header)
 {
-  __pnacl_eh_sjlj_Unwind_RaiseException (ue_header);
+  // Pass check_for_catch=false so that unwinding does not take O(n^2)
+  // time in the number of cleanup landingpads entered before entering
+  // the catch() block.
+  handle_exception (ue_header, false);
 
   // We've run C++ destructors (cleanup handlers), but no further
-  // handlers were found, so abort.
-  //
-  // Note that this situation does not normally happen with GNU C++,
-  // which scans the stack to check for a matching catch or filter
-  // clause, and calls std::terminate() if none is found, before
-  // calling any cleanup handlers.
-  //
-  // Both behaviours are allowed by the C++ standard, which says "If
-  // no matching handler is found, the function std::terminate() is
-  // called; whether or not the stack is unwound before this call to
-  // std::terminate() is implementation-defined".
+  // handlers were found, so abort.  We should not reach here, because
+  // __pnacl_eh_sjlj_Unwind_RaiseException() already checked that
+  // there was a handler for this exception other than cleanup
+  // handlers.
   __cxa_begin_catch (ue_header);
   std::terminate ();
 }
