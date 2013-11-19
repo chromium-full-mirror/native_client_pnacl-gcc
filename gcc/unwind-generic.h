@@ -90,13 +90,31 @@ struct _Unwind_Exception
 {
   _Unwind_Exception_Class exception_class;
   _Unwind_Exception_Cleanup_Fn exception_cleanup;
+  /* @LOCALMOD-START */
+  /* The PNaCl toolchain's libgcc_eh (built with nacl-gcc on x86)
+     expects _Unwind_Exception to be at least 32 bytes.  _Unwind_Word
+     is 64-bit in x86-64 nacl-gcc but only 32-bit in pnacl-clang.
+     Make sure we reserve enough space below.  The exact offsets of
+     private_1/2 in pnacl-clang don't matter because these fields are
+     private to libgcc_eh.  */
+#if defined(__native_client__)
+  unsigned long long private_1;
+  unsigned long long private_2;
+};
+#else
   _Unwind_Word private_1;
   _Unwind_Word private_2;
 
   /* @@@ The IA-64 ABI says that this structure must be double-word aligned.
      Taking that literally does not make much sense generically.  Instead we
-     provide the maximum alignment required by any type for the machine.  */
+     provide the maximum alignment required by any type for the machine.
+
+     Don't apply this attribute under NaCl because it gives an
+     alignment of 16, whereas nacl-newlib's malloc() only returns
+     8-byte-aligned blocks.  */
 } __attribute__((__aligned__));
+#endif
+/* @LOCALMOD-END */
 
 
 /* The ACTIONS argument to the personality routine is a bitwise OR of one
