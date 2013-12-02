@@ -240,10 +240,13 @@ handle_exception (struct _Unwind_Exception *ue_header, bool check_for_catch)
   __cxa_exception *xh = __get_exception_header_from_ue (ue_header);
 
   void *obj = __get_object_from_ue (ue_header);
+  // We must get exceptionType via OBJ rather than from XH in order to
+  // handle dependent exceptions.
+  const std::type_info *throw_type =
+      __get_exception_header_from_obj (obj)->exceptionType;
   struct exception_frame *frame;
   int32_t clause_id;
-  if (find_match (xh->exceptionType, &obj, __pnacl_eh_stack,
-                  &frame, &clause_id))
+  if (find_match (throw_type, &obj, __pnacl_eh_stack, &frame, &clause_id))
     {
       // Check that there is a non-cleanup handler for the exception.
       // If not, we should abort before running cleanup handlers
@@ -260,7 +263,7 @@ handle_exception (struct _Unwind_Exception *ue_header, bool check_for_catch)
       // called; whether or not the stack is unwound before this call
       // to std::terminate() is implementation-defined".
       if (check_for_catch && clause_id == 0 &&
-          !is_exception_caught (xh->exceptionType, obj, frame->next))
+          !is_exception_caught (throw_type, obj, frame->next))
         return;
 
       __pnacl_eh_stack = frame->next;
