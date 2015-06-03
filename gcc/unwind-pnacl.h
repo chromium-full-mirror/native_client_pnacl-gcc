@@ -94,7 +94,7 @@
 #elif defined(__i386__)
 #define pnacl_unwind_result0_reg() 0
 #elif defined(__arm__)
-#define pnacl_unwind_result0_reg() 4
+#define pnacl_unwind_result0_reg() 0
 #elif defined(__mips__)
 #define pnacl_unwind_result0_reg() 4
 #else
@@ -107,7 +107,7 @@
 #elif defined(__i386__)
 #define pnacl_unwind_result1_reg() 2
 #elif defined(__arm__)
-#define pnacl_unwind_result1_reg() 5
+#define pnacl_unwind_result1_reg() 1
 #elif defined(__mips__)
 #define pnacl_unwind_result1_reg() 5
 #else
